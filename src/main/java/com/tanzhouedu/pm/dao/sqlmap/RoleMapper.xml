@@ -1,0 +1,215 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.tanzhouedu.pm.dao.mapper.RoleMapper">
+    <cache type="org.mybatis.caches.ehcache.EhcacheCache" />
+    <sql id="roleColumns">
+        r.id,
+        r.office_id as "office.id",
+        r.name,
+        r.data_scope as "dataScope",
+        r.is_sys as "isSys",
+        r.useable,
+        r.create_by as "createBy.id",
+        r.create_date as "createDate",
+        r.update_by as "updateBy.id",
+        r.update_date as "updateDate",
+        r.remarks,
+        o.name as "office.name"
+    </sql>
+
+    <sql id="roleJoin">
+        LEFT JOIN pm_sys_office o on o.id = r.office_id
+    </sql>
+
+    <resultMap id="roleResultMap" type="Role">
+        <id column="id" property="id" jdbcType="INTEGER" />
+        <result column="name" property="name" jdbcType="VARCHAR" />
+        <result column="dataScope" property="dataScope" jdbcType="CHAR" />
+        <result column="isSys" property="isSys" jdbcType="VARCHAR" />
+        <result column="useable" property="useable" jdbcType="VARCHAR" />
+        <result column="remarks" property="remarks" jdbcType="VARCHAR" />
+        <association property="office" javaType="Office">
+            <result column="office.id" property="id"/>
+            <result column="office.name" property="name" />
+        </association>
+        <collection property="menuList" ofType="Menu">
+            <id property="id" column="menuList.id" />
+        </collection>
+        <collection property="officeList" ofType="Office">
+            <id property="id" column="officeList.id"></id>
+        </collection>
+
+     </resultMap>
+
+    <select id="queryList" parameterType="Role" resultType="Role">
+      SELECT <include refid="roleColumns" />
+      FROM pm_sys_role r
+        LEFT JOIN pm_sys_office o on o.id = r.office_id
+      where r.del_flag = #{DEL_FLAG_NORMAL} and r.useable = '1'
+      ${dataScopeFilter.dsf}
+    </select>
+
+    <select id="queryById" parameterType="string" resultMap="roleResultMap">
+      SELECT <include refid="roleColumns" />,
+        rm.menu_id as "menuList.id",
+        ro.office_id as "officeList.id"
+        from pm_sys_role r
+        <include refid="roleJoin" />
+        LEFT JOIN pm_sys_role_menu rm on rm.role_id = r.id
+        LEFT JOIN pm_sys_role_office ro on ro.role_id = r.id
+        WHERE  r.id = #{id,jdbcType=INTEGER}
+    </select>
+
+    <select id="queryByUserId" resultMap="roleResultMap" parameterType="Role">
+      SELECT <include refid="roleColumns" />,
+        rm.menu_id as "menuList.id",
+        ro.office_id as "officeList.id"
+        FROM pm_sys_role r
+        <include refid="roleJoin" />
+        LEFT JOIN pm_sys_role_menu rm on rm.role_id = r.id
+        LEFT JOIN pm_sys_role_office ro on ro.role_id = r.id
+        left JOIN pm_sys_user_role ur on ur.role_id = r.id
+        left join pm_sys_user u on u.id = ur.user_id
+        where r.del_flag = #{DEL_FLAG_NORMAL} and r.useable = '1'
+          <if test="user != null and user.id != null and user.id != ''">
+             and u.id = #{user.id}
+          </if>
+          <if test="user != null and user.loginName != null and user.loginName != ''">
+             and u.login_name = #{user.loginName}
+          </if>
+        order by r.name
+    </select>
+    <select id="queryByName" resultType="Role">
+        SELECT <include refid="roleColumns" />
+        FROM pm_sys_role r
+        LEFT JOIN pm_sys_office o on o.id = r.office_id
+        where r.del_flag = #{DEL_FLAG_NORMAL} and r.name = #{name}
+    </select>
+
+    <insert id="insert" parameterType="Role" useGeneratedKeys="true"
+            keyProperty="id">
+        insert into pm_sys_role
+        <trim prefix="(" suffix=")" suffixOverrides="," >
+            <if test="office != null and office.id != null and office.id != ''" >
+                office_id,
+            </if>
+            <if test="name != null" >
+                name,
+            </if>
+            <if test="dataScope != null" >
+                data_scope,
+            </if>
+            <if test="isSys != null" >
+                is_sys,
+            </if>
+            <if test="useable != null" >
+                useable,
+            </if>
+            <if test="createBy != null and createBy.id != null and createBy.id != ''" >
+                create_by,
+            </if>
+            <if test="createDate != null" >
+                create_date,
+            </if>
+            <if test="updateBy != null and updateBy.id != null and updateBy.id != ''" >
+                update_by,
+            </if>
+            <if test="updateDate != null" >
+                update_date,
+            </if>
+            <if test="remarks != null" >
+                remarks,
+            </if>
+            <if test="delFlag != null" >
+                del_flag,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides="," >
+            <if test="office != null and office.id != null and office.id != ''" >
+                #{office.id,jdbcType=INTEGER},
+            </if>
+            <if test="name != null" >
+                #{name,jdbcType=VARCHAR},
+            </if>
+            <if test="dataScope != null" >
+                #{dataScope,jdbcType=CHAR},
+            </if>
+            <if test="isSys != null" >
+                #{isSys,jdbcType=VARCHAR},
+            </if>
+            <if test="useable != null" >
+                #{useable,jdbcType=VARCHAR},
+            </if>
+            <if test="createBy != null and createBy.id != null and createBy.id != ''" >
+                #{createBy.id,jdbcType=VARCHAR},
+            </if>
+            <if test="createDate != null" >
+                #{createDate,jdbcType=TIMESTAMP},
+            </if>
+            <if test="updateBy != null and updateBy.id != null and updateBy.id != ''" >
+                #{updateBy.id,jdbcType=VARCHAR},
+            </if>
+            <if test="updateDate != null" >
+                #{updateDate,jdbcType=TIMESTAMP},
+            </if>
+            <if test="remarks != null" >
+                #{remarks,jdbcType=VARCHAR},
+            </if>
+            <if test="delFlag != null" >
+                #{delFlag,jdbcType=CHAR},
+            </if>
+        </trim>
+    </insert>
+    <insert id="insertRoleMenu">
+        INSERT INTO pm_sys_role_menu (role_id, menu_id) VALUES 
+        <foreach collection="menuList" item="menu" separator=",">
+            (#{id, jdbcType=INTEGER}, #{menu.id, jdbcType=INTEGER})
+        </foreach>
+    </insert>
+    <insert id="insertRoleOffice">
+        INSERT INTO pm_sys_role_office (role_id, office_id) VALUES
+        <foreach collection="officeList" item="office" separator=",">
+            (#{id, jdbcType=INTEGER}, #{office.id, jdbcType=INTEGER})
+        </foreach>
+    </insert>
+    <update id="update" parameterType="Role">
+        update pm_sys_role
+        <set >
+            <if test="office != null and office.id != null and office.id != ''" >
+                office_id = #{office.id,jdbcType=INTEGER},
+            </if>
+            <if test="name != null" >
+                name = #{name,jdbcType=VARCHAR},
+            </if>
+            <if test="dataScope != null" >
+                data_scope = #{dataScope,jdbcType=CHAR},
+            </if>
+            <if test="isSys != null" >
+                is_sys = #{isSys,jdbcType=VARCHAR},
+            </if>
+            <if test="useable != null" >
+                useable = #{useable,jdbcType=VARCHAR},
+            </if>
+            <if test="updateBy != null and updateBy.id != null and updateBy.id != ''" >
+                update_by = #{updateBy.id,jdbcType=VARCHAR},
+            </if>
+            <if test="updateDate != null" >
+                update_date = #{updateDate,jdbcType=TIMESTAMP},
+            </if>
+            <if test="remarks != null" >
+                remarks = #{remarks,jdbcType=VARCHAR},
+            </if>
+        </set>
+        where id = #{id,jdbcType=INTEGER}
+    </update>
+    <delete id="delete" parameterType="Role">
+      UPDATE pm_sys_role SET del_flag = #{DEL_FLAG_DELETE}
+      where id = #{id,jdbcType=INTEGER}
+    </delete>
+    <delete id="deleteRoleMenu">
+        DELETE FROM pm_sys_role_menu WHERE role_id = #{roleId,jdbcType=INTEGER}
+    </delete>
+    <delete id="deleteRoleOffice">
+        DELETE FROM pm_sys_role_office WHERE role_id = #{roleId,jdbcType=INTEGER}
+    </delete>
+</mapper>

@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.tanzhouedu.pm.dao.mapper.LogMapper">
+
+    <select id="queryList" parameterType="Log" resultType="Log">
+      SELECT
+        l.id,
+        l.type,
+        l.title,
+        l.create_by as "createBy.id",
+        l.create_date as "createDate",
+        l.remote_addr as "remoteAddr",
+        l.user_agent as "userAgent",
+        l.request_uri as requestUri,
+        l.method,
+        l.params,
+        l.exception,
+        u.name as "createBy.name",
+        o.name as "createBy.company.name",
+        o1.name as "createBy.office.name"
+        FROM pm_sys_log l
+        JOIN pm_sys_user u on u.id = l.create_by
+        JOIN pm_sys_office o on o.id = u.company_id
+        JOIN pm_sys_office o1 on o1.id = u.office_id
+      WHERE l.create_date BETWEEN #{beginDate} AND #{endDate}
+        <if test="title != null and title != ''" >
+            and l.title like concat ('%', #{title} ,'%')
+        </if>
+        <if test="createBy != null and createBy.id != null and createBy.id != ''">
+            and l.create_by = #{createBy.id}
+        </if>
+        <if test="requestUri != null and requestUri != ''" >
+            and l.request_uri like concat ('%', #{requestUri} ,'%')
+        </if>
+        <if test="type != null and type != ''" >
+            and l.type = #{type}
+        </if>
+        order by l.create_date desc
+    </select>
+
+
+    <insert id="insert" parameterType="Log" useGeneratedKeys="true"
+            keyProperty="id">
+        insert into pm_sys_log
+        <trim prefix="(" suffix=")" suffixOverrides="," >
+            <if test="type != null" >
+                type,
+            </if>
+            <if test="title != null" >
+                title,
+            </if>
+            <if test="createBy != null" >
+                create_by,
+            </if>
+            <if test="createDate != null" >
+                create_date,
+            </if>
+            <if test="remoteAddr != null" >
+                remote_addr,
+            </if>
+            <if test="userAgent != null" >
+                user_agent,
+            </if>
+            <if test="requestUri != null" >
+                request_uri,
+            </if>
+            <if test="method != null" >
+                method,
+            </if>
+            <if test="params != null" >
+                params,
+            </if>
+            <if test="exception != null" >
+                exception,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides="," >
+            <if test="type != null" >
+                #{type,jdbcType=CHAR},
+            </if>
+            <if test="title != null" >
+                #{title,jdbcType=VARCHAR},
+            </if>
+            <if test="createBy != null" >
+                #{createBy.id,jdbcType=VARCHAR},
+            </if>
+            <if test="createDate != null" >
+                #{createDate,jdbcType=TIMESTAMP},
+            </if>
+            <if test="remoteAddr != null" >
+                #{remoteAddr,jdbcType=VARCHAR},
+            </if>
+            <if test="userAgent != null" >
+                #{userAgent,jdbcType=VARCHAR},
+            </if>
+            <if test="requestUri != null" >
+                #{requestUri,jdbcType=VARCHAR},
+            </if>
+            <if test="method != null" >
+                #{method,jdbcType=VARCHAR},
+            </if>
+            <if test="params != null" >
+                #{params,jdbcType=LONGVARCHAR},
+            </if>
+            <if test="exception != null" >
+                #{exception,jdbcType=LONGVARCHAR},
+            </if>
+        </trim>
+    </insert>
+
+
+</mapper>

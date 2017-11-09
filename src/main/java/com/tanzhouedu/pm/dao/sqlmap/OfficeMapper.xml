@@ -1,0 +1,270 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.tanzhouedu.pm.dao.mapper.OfficeMapper">
+    <cache type="org.mybatis.caches.ehcache.EhcacheCache" />
+    <sql id="officeColumns">
+        o.id,
+        o.parent_id as "parent.id",
+        o.parent_ids as "parentIds",
+        o.name,
+        o.sort,
+        o.area_id as "area.id",
+        o.code,
+        o.type,
+        o.grade,
+        o.address,
+        o.zip_code as "zipCode",
+        o.master,
+        o.phone,
+        o.fax,
+        o.email,
+        o.useable,
+        o.create_by as "createBy.id",
+        o.create_date as "createDate",
+        o.update_by as "updateBy.id",
+        o.update_date as "updateDate",
+        o.remarks,
+        p.name as "parent.name",
+        a.name as "area.name"
+    </sql>
+
+
+    <sql id="officeJoins">
+        LEFT JOIN pm_sys_office p on p.id = o.parent_id
+        LEFT JOIN pm_sys_area a on a.id = o.area_id
+    </sql>
+
+    <select id="queryList" parameterType="Office" resultType="Office">
+      SELECT <include refid="officeColumns"/>
+        FROM pm_sys_office o <include refid="officeJoins"/>
+        WHERE o.del_flag = #{DEL_FLAG_NORMAL}
+        order by o.code
+    </select>
+
+    <select id="queryById" parameterType="string" resultType="Office">
+        SELECT <include refid="officeColumns"/>
+        FROM pm_sys_office o <include refid="officeJoins"/>
+        WHERE o.id = #{id, jdbcType=INTEGER}
+    </select>
+
+    <select id="queryByParentIdsLike" parameterType="Office" resultType="Office">
+        SELECT <include refid="officeColumns"/>
+        FROM pm_sys_office o <include refid="officeJoins"/>
+        WHERE o.del_flag = #{DEL_FLAG_NORMAL}
+         and o.parent_ids like concat('%', #{parentIds}, '%')
+        order by code
+    </select>
+
+
+    <insert id="insert" parameterType="Office" useGeneratedKeys="true"
+            keyProperty="id">
+        insert into pm_sys_office
+        <trim prefix="(" suffix=")" suffixOverrides="," >
+
+            <if test="parent.id != null" >
+                parent_id,
+            </if>
+            <if test="parentIds != null" >
+                parent_ids,
+            </if>
+            <if test="name != null" >
+                name,
+            </if>
+            <if test="sort != null" >
+                sort,
+            </if>
+            <if test="area.id != null" >
+                area_id,
+            </if>
+            <if test="code != null" >
+                code,
+            </if>
+            <if test="type != null" >
+                type,
+            </if>
+            <if test="grade != null" >
+                grade,
+            </if>
+            <if test="address != null" >
+                address,
+            </if>
+            <if test="zipCode != null" >
+                zip_code,
+            </if>
+            <if test="master != null" >
+                master,
+            </if>
+            <if test="phone != null" >
+                phone,
+            </if>
+            <if test="fax != null" >
+                fax,
+            </if>
+            <if test="email != null" >
+                email,
+            </if>
+            <if test="useable != null" >
+                useable,
+            </if>
+            <if test="createBy.id != null" >
+                create_by,
+            </if>
+            <if test="createDate != null" >
+                create_date,
+            </if>
+            <if test="updateBy.id != null" >
+                update_by,
+            </if>
+            <if test="updateDate != null" >
+                update_date,
+            </if>
+            <if test="remarks != null" >
+                remarks,
+            </if>
+            <if test="delFlag != null" >
+                del_flag,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides="," >
+
+            <if test="parent.id != null" >
+                #{parent.id,jdbcType=INTEGER},
+            </if>
+            <if test="parentIds != null" >
+                #{parentIds,jdbcType=VARCHAR},
+            </if>
+            <if test="name != null" >
+                #{name,jdbcType=VARCHAR},
+            </if>
+            <if test="sort != null" >
+                #{sort,jdbcType=DECIMAL},
+            </if>
+            <if test="area.id != null" >
+                #{area.id,jdbcType=VARCHAR},
+            </if>
+            <if test="code != null" >
+                #{code,jdbcType=VARCHAR},
+            </if>
+            <if test="type != null" >
+                #{type,jdbcType=CHAR},
+            </if>
+            <if test="grade != null" >
+                #{grade,jdbcType=CHAR},
+            </if>
+            <if test="address != null" >
+                #{address,jdbcType=VARCHAR},
+            </if>
+            <if test="zipCode != null" >
+                #{zipCode,jdbcType=VARCHAR},
+            </if>
+            <if test="master != null" >
+                #{master,jdbcType=VARCHAR},
+            </if>
+            <if test="phone != null" >
+                #{phone,jdbcType=VARCHAR},
+            </if>
+            <if test="fax != null" >
+                #{fax,jdbcType=VARCHAR},
+            </if>
+            <if test="email != null" >
+                #{email,jdbcType=VARCHAR},
+            </if>
+            <if test="useable != null" >
+                #{useable,jdbcType=VARCHAR},
+            </if>
+            <if test="createBy.id != null" >
+                #{createBy.id,jdbcType=VARCHAR},
+            </if>
+            <if test="createDate != null" >
+                #{createDate,jdbcType=TIMESTAMP},
+            </if>
+            <if test="updateBy.id != null" >
+                #{updateBy.id,jdbcType=VARCHAR},
+            </if>
+            <if test="updateDate != null" >
+                #{updateDate,jdbcType=TIMESTAMP},
+            </if>
+            <if test="remarks != null" >
+                #{remarks,jdbcType=VARCHAR},
+            </if>
+            <if test="delFlag != null" >
+                #{delFlag,jdbcType=CHAR},
+            </if>
+        </trim>
+    </insert>
+    <update id="update" parameterType="Office">
+        update pm_sys_office
+        <set >
+            <if test="parent != null and parent.id != null" >
+                parent_id = #{parent.id,jdbcType=INTEGER},
+            </if>
+            <if test="parentIds != null" >
+                parent_ids = #{parentIds,jdbcType=VARCHAR},
+            </if>
+            <if test="name != null" >
+                name = #{name,jdbcType=VARCHAR},
+            </if>
+            <if test="sort != null" >
+                sort = #{sort,jdbcType=DECIMAL},
+            </if>
+            <if test="area != null and area.id != null" >
+                area_id = #{area.id,jdbcType=VARCHAR},
+            </if>
+            <if test="code != null" >
+                code = #{code,jdbcType=VARCHAR},
+            </if>
+            <if test="type != null" >
+                type = #{type,jdbcType=CHAR},
+            </if>
+            <if test="grade != null" >
+                grade = #{grade,jdbcType=CHAR},
+            </if>
+            <if test="address != null" >
+                address = #{address,jdbcType=VARCHAR},
+            </if>
+            <if test="zipCode != null" >
+                zip_code = #{zipCode,jdbcType=VARCHAR},
+            </if>
+            <if test="master != null" >
+                master = #{master,jdbcType=VARCHAR},
+            </if>
+            <if test="phone != null" >
+                phone = #{phone,jdbcType=VARCHAR},
+            </if>
+            <if test="fax != null" >
+                fax = #{fax,jdbcType=VARCHAR},
+            </if>
+            <if test="email != null" >
+                email = #{email,jdbcType=VARCHAR},
+            </if>
+            <if test="useable != null" >
+                useable = #{useable,jdbcType=VARCHAR},
+            </if>
+            <if test="updateBy != null and updateBy.id != null" >
+                update_by = #{updateBy.id,jdbcType=VARCHAR},
+            </if>
+            <if test="updateDate != null" >
+                update_date = #{updateDate,jdbcType=TIMESTAMP},
+            </if>
+            <if test="remarks != null" >
+                remarks = #{remarks,jdbcType=VARCHAR},
+            </if>
+            <if test="delFlag != null" >
+                del_flag = #{delFlag,jdbcType=CHAR},
+            </if>
+        </set>
+        where id = #{id,jdbcType=INTEGER}
+    </update>
+
+    <update id="updateParentIds">
+        UPDATE pm_sys_office set
+          parent_ids = #{parentIds,jdbcType=VARCHAR},
+          parent_id = #{parent.id,jdbcType=INTEGER},
+        where id = #{id,jdbcType=INTEGER}
+    </update>
+
+    <delete id="delete" parameterType="Office">
+      UPDATE pm_sys_office set  del_flag = #{DEL_FLAG_DELETE}
+      where id = #{id} or parent_ids like concat ('%', #{id}, '%')
+    </delete>
+</mapper>
